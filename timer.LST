@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   TIMER                                                                 04/08/2017 20:27:02 PAGE 1   
+C51 COMPILER V9.00   TIMER                                                                 04/08/2017 21:09:00 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE TIMER
@@ -17,7 +17,8 @@ line level    source
    8   1          TL0  = 0x3C; //50ms¶¨Ê±
    9   1          TH0  = 0xB0;
   10   1      
-  11   1          timer_key = 100;
+  11   1          timer_key = 100;//100*50=5000ms--¶¨Ê±5s--µ«ÊÇ»­Öù×´Í¼Ì«ÂýÁË--µ¼ÖÂ¸Ð¾õ¶¨Ê±²»×ãÎåÃë--ÄÇÊÇÄãµÄÑÛ¾¦ÆÛÆ­ÁËÄ
+             -ã
   12   1      
   13   1          ET0 = 1; //ÔÊÐíT0ÖÐ¶Ï                                                      
   14   1          EA  = 1; //¿ª·ÅÖÐ¶Ï
@@ -29,9 +30,9 @@ line level    source
   20   1          TL0  = 0x3C;
   21   1          TH0  = 0xB0;
   22   1      
-  23   1          timer_key--;
+  23   1          timer_key--;//Ã¿Ò»´Î50ms¼õ¼õ
   24   1      
-  25   1          if(0 == timer_key){
+  25   1          if(0 == timer_key){//¶¨Ê±Âú5sÁËÖÕÓÚ
   26   2             
   27   2             timer_key = 100;
   28   2                 scale_line_status = 1;

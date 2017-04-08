@@ -142,6 +142,7 @@ void crt_time(BYTE line)
 
 
 
+/*第二个画面显示时间和当前温度*/
 
 void ShowTime_Temprature(void)
 {
@@ -156,6 +157,8 @@ void ShowTime_Temprature(void)
 	   Delay2(1);
 }
 
+
+/*开机启动的画面*/
 void ShowBIOS()
 {
 	write_string_lcd(1,2," HELLO");
@@ -164,6 +167,8 @@ void ShowBIOS()
 	write_string_lcd(4,3,"By: 葛思邑");
 }
 
+
+/*键盘扫描程序*/
 BYTE KeyScan()
 {  
 	BYTE num_key=0;//按键号 
@@ -239,7 +244,7 @@ BYTE KeyScan()
     return(num_key);//返回按键号 
 }
 
-
+/*更新历史数据--最新的历史数据*/
 void UpdateNewTemprature()
 {
 	BYTE i = 0;
@@ -253,6 +258,7 @@ void UpdateNewTemprature()
    	new_temprature[BUF_LEN-1]  = (WORD)(wen_val*100);
 }
 
+/*更新历史数据--上一次画完柱状图以后对应的历史数据--用来进行增量计算*/
 void UpdateOldTemprature()
 {
 	BYTE i = 0, j = 0;
@@ -263,23 +269,25 @@ void UpdateOldTemprature()
 	}
 }
 
+
+/*主函数*/
 void main()
 {
 	
 	BYTE key_num = 0;
 	BYTE status = 1;
 	
-	BYTE show_scale_line_flag = 0;
-	BYTE first_time_scale = 0;	
+	BYTE show_scale_line_flag = 0;//表明K3按下去的标志
+	BYTE first_time_scale = 0;//本次开机以后第一次启动第三个画面的标志--用来清屏	
 	SP=0x60;
-	lcd_init();
+	lcd_init();	//LCD初始化
 	//TimerInit();
-	DS_init();
-	//write_time();   //DS12C887时间设置
+	DS_init();//实时时钟初始化
+	//write_time();   //DS12C887时间设置，只需要调用一次就应该注释掉--实时时钟芯片的特性
 	
-	DS18B20_Init();
-	get_wendu();
-	g_base = (WORD)((wen_val-1)*100);
+	DS18B20_Init();	//温度传感器初始化
+	get_wendu();//获取温度--温度值在全局变量
+	g_base = (WORD)((wen_val-1)*100);//获取基准值
 		 
 
 	while(1)			   
@@ -287,48 +295,48 @@ void main()
 		  key_num =KeyScan();
 		  if(key_num != 0)
 		  {	 
-		  		if(key_num == 3)
+		  		if(key_num == 3)   //切换到第三个画面
 				{
 					lcd_init();
 					scale_line_status = 1;
-					if(first_time_scale == 0)
+					if(first_time_scale == 0)//只在第一次切换到第三个画面的时候清屏--清屏太慢了
 					{
 						clear_lcd(); 
 					}
 					lcd_init_draw();
-					if(first_time_scale == 0)
+					if(first_time_scale == 0)//只在第一次切换到第三个画面的时候画坐标
 						ShowXY();
 					first_time_scale = 1;	
 					show_scale_line_flag = 1;
-					TimerInit();
+					TimerInit();  //启动定时器
 				}
-				else if(key_num == 1 ||key_num == 2){
+				else if(key_num == 1 ||key_num == 2){ //切换到第一/第二个画面，不需要定时器
 					 ET0 = 0; //不允许T0中断
-					 TR0 = 0;  
+					 TR0 = 0;  //关闭定时器
 		  			lcd_init();
 				}
-				status = key_num;
+				status = key_num; //更新显示的状态机
 		  }
-		  if(scale_line_status == 1)
+		  if(scale_line_status == 1) //定时器定时时间到了
 		  {
 				UpdateNewTemprature();
-				scale_line_status = 2;
+				scale_line_status = 2;//该更新柱状图了
 		  }
-		  switch(status)
+		  switch(status) //处理状态机
 		  {
 		  		case 1:
-					ShowBIOS();
+					ShowBIOS();//显示开机画面
 					break;
-				case 2:
+				case 2:	 //显示温度时间画面
 					ShowTime_Temprature();
 					break;
-				case 3:
-					if(show_scale_line_flag == 1 || scale_line_status == 2){
+				case 3://显示柱状图
+					if(show_scale_line_flag == 1 || scale_line_status == 2){//当按键K3按下或者在已经按下按键的情况下，定时时间到了--更新柱状图
 						
-						UpdateScaleLine();
-						scale_line_status = 3;
-						UpdateOldTemprature();
-						show_scale_line_flag = 0;
+						UpdateScaleLine();//更新/画柱状图
+						scale_line_status = 3; //不要再更新了--否则一直画图会闪烁--等待下一次定时时间到再更新
+						UpdateOldTemprature(); //更新旧的历史数据--用来做下一次的增量计算
+						show_scale_line_flag = 0; //按键已经按下了，我也处理了---不要再更新柱状图了--否则会闪烁--等待下一次按键按下再更新
 					}
 					
 					break;

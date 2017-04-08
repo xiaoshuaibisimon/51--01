@@ -211,6 +211,10 @@ void write_data_lcd(BYTE line,column,dat)
     Delay(1);
 }
 
+
+/*********************************************************
+*粗略的延时函数--暂时没用到
+**********************************************************/
 static void lcd_delay(WORD x)
 {
 
@@ -222,9 +226,10 @@ static void lcd_delay(WORD x)
 
 }
 
-/*
-画图清屏，由于LCD的清屏指令0X01不能作用在绘图中，所有只能自己写清屏子程序
-*/
+/*********************************************************
+*画图清屏，由于LCD的清屏指令0X01不能作用在绘图中，
+*所以只能自己写清屏子程序
+**********************************************************/
 
 void clear_lcd(void)
 {    
@@ -249,7 +254,9 @@ void clear_lcd(void)
 
 
 
-
+/*********************************************************
+*初始化LCD的画图功能
+**********************************************************/
 void lcd_init_draw(void)
 {
 	//write_cmd(0x34);//写指令函数，扩充指令集，绘图关
@@ -265,6 +272,10 @@ void lcd_init_draw(void)
 #endif
 }
 
+
+/*********************************************************
+*读取LCD某个地址的数据
+**********************************************************/
 BYTE read_data(void)
 {
 	BYTE dl;
@@ -288,8 +299,6 @@ BYTE read_data(void)
 最后就是输入数据地址，先输入Y轴，再输入X轴，输入数据。
 
 */
-
-
 void DrawDots(BYTE x,BYTE y)//打点函数   //x，y为128*64 点阵的坐标
 {
 
@@ -328,7 +337,9 @@ void DrawDots(BYTE x,BYTE y)//打点函数   //x，y为128*64 点阵的坐标
     write_cmd(0x30);     //转回基本指令集   
 }
 
-
+/*********************************************************
+*将指定的坐标点亮或者熄灭或者变暗
+**********************************************************/
 void DrawDots2(BYTE x,BYTE y,BYTE color)//打点函数   //x，y为128*64 点阵的坐标
 {
      BYTE row,xlabel,xlabel_bit; 
@@ -377,22 +388,25 @@ void DrawDots2(BYTE x,BYTE y,BYTE color)//打点函数   //x，y为128*64 点阵的坐标
      } 
      write_cmd(0x30);//恢复正常模式  
 }
+
+
+/*********************************************************
+*画XY坐标轴
+**********************************************************/
 void ShowXY(void)
 {
-	BYTE i = 0,	x = 0,y = 0;
+	BYTE i = 0;
 	
     for(i=0;i<62;i++) //画出Y轴
     {
         DrawDots(2,i);
     }
 
-    for(i=2;i<128;i++)
+    for(i=2;i<128;i++) //画出X轴
     {
-        x=i;
-        //y=32-x%32;
-        DrawDots(x,61);
+        DrawDots(i,61);
     }
-	for(i = 0;i < 2;i++)
+	for(i = 0;i < 2;i++)//画箭头
 	{
 	 	 DrawDots(126-i,60-i);
 		 DrawDots(3+i,1+i);
@@ -404,6 +418,16 @@ void ShowXY(void)
 extern WORD new_temprature[BUF_LEN];
 extern WORD old_temprature[BUF_LEN];
 
+
+/*********************************************************
+*在指定的X处开始画柱状图，
+width表示宽度，
+var表示柱状图要表示的数值
+base表示基准值--纵坐标为零对应的温度值--目前采用上电开机以后第一次读取到的温度减1作为基准值
+precision表示纵坐标每一格代表的温度值的100倍（单片机处理浮点数很慢--扩大一百倍变为正数处理）
+		 这里用宏定义为5，原温度值就是（5/100=0.05度），也就是纵坐标每一格代表0.05度
+		 所以，对于60个纵坐标格子最多能表示的温度变化范围是3度。
+**********************************************************/
 void ShowScaleLine(BYTE x,BYTE width,WORD var,WORD base,WORD precision)
 {
    BYTE i = 0,j = 0;
@@ -419,30 +443,34 @@ void ShowScaleLine(BYTE x,BYTE width,WORD var,WORD base,WORD precision)
 
 extern WORD g_base;
 
-
+/*********************************************************
+*更新柱状图--利用修改增量的方式更新柱状图
+*柱状图高度 = （当前温度值 - 基准值）/ 精度值
+*当前温度值：就是最新采集到的历史数据
+*基准值：（第一次上电以后获得的温度值 - 1）对应的浮点数 x 100变为整数
+**********************************************************/
 void UpdateScaleLine()
 {
 
 	BYTE i = 0,j = 0,k=0;
 	BYTE x = 0,y = 0;
-	BYTE action = 0;
-	WORD delta = 0;
+	
 	BYTE new_h = 0;
 	BYTE old_h = 0;
 
-	for(i = 0;i < BUF_LEN;i++)
+	for(i = 0;i < BUF_LEN;i++) //循环BUF_LEN，每次更新一条柱状--共有BUF_LEN个历史数据
 	{
-		if(new_temprature[i] == 0)
+		if(new_temprature[i] == 0)//新采集的温度为0--表示还没有采集到对应的历史数据（刚刚开机不久）
 			continue;
-		if(new_temprature[i] > g_base)
+		if(new_temprature[i] > g_base)//由于g_base是上电以后的（第一个温度值-1），所以在短时间内，新采集到的数据都会大于这个值
 			new_h = (new_temprature[i] - g_base)/SCALE_LINE_PRECISION;
 		else
-			new_h = 0;
+			new_h = 0;	//如果新采集的温度小于基准值--就将新的高度设置为0
 
-		if(new_h > 61)
+		if(new_h > 61)	//如果新采集的数据对应的高度超过纵坐标能支持的最大高度，强制设置为最大高度61
 			new_h = 61;
 
-		if(old_temprature[i] > g_base)
+		if(old_temprature[i] > g_base)//参考前面的注释
 			old_h = (old_temprature[i] - g_base)/SCALE_LINE_PRECISION;
 		else 
 			old_h = 0;
@@ -450,22 +478,22 @@ void UpdateScaleLine()
 		if(old_h > 61)
 			old_h = 61;
 		
-		if(new_h == old_h)
+		if(new_h == old_h)//两次高度相等
 			continue;
-		else if(new_h > old_h)
+		else if(new_h > old_h) //新高度较高--表示需要在当前的基础上增加一段高度
 		{
-			x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
-			y = 61 - old_h;
+			x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);//旧柱状图的左上顶点的X坐标
+			y = 61 - old_h;	//旧柱状图的左上顶点的Y坐标
 			for(k = 0;k < (new_h - old_h);k++)
 			 {
 				 for(j = 0;j < SCALE_LINE_WIDTH;j++)
 				 {
-					 DrawDots2(x+j,y-1-k,1);
+					 DrawDots2(x+j,y-1-k,1); //Y坐标需要在旧坐标的基础上再往上跳一格开始增加指定高度
 				 }
 			 }
 			
 		}
-		else if (new_h < old_h)
+		else if (new_h < old_h)//新高度较矮--表示需要在当前的基础上减去一段高度
 		{
 			x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
 			y = 61 - old_h;
@@ -473,7 +501,7 @@ void UpdateScaleLine()
 			 {
 				 for(j = 0;j < SCALE_LINE_WIDTH;j++)
 				 {
-					 DrawDots2(x+j,y+k,0);
+					 DrawDots2(x+j,y+k,0); //Y坐标在旧坐标的基础上直接减少指定高度
 				 }
 			 }
 		}

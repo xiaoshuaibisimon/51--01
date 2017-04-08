@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 1   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE LCD12864
@@ -62,7 +62,7 @@ line level    source
   53   1          BYTE address;
   54   1          if(line == 1)
   55   1          {
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 2   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 2   
 
   56   2              address = 0x80 + column;
   57   2          }
@@ -126,7 +126,7 @@ line level    source
  115          {
  116   1              BYTE dhi,dli,ddi,dei;
  117   1              unsigned long datah;
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 3   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 3   
 
  118   1              unsigned long datal;
  119   1              datah=dat;
@@ -190,7 +190,7 @@ line level    source
  177   2                        dat=1;
  178   2                for (dli=0;dli<N;dli++)
  179   2                        {
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 4   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 4   
 
  180   3                              dat*=10;
  181   3                        }
@@ -226,292 +226,321 @@ line level    source
  211   1          Delay(1);
  212   1      }
  213          
- 214          static void lcd_delay(WORD x)
- 215          {
- 216   1      
- 217   1          WORD y;
- 218   1      
- 219   1          for(;x>0;x--)
+ 214          
+ 215          /*********************************************************
+ 216          *粗略的延时函数--暂时没用到
+ 217          **********************************************************/
+ 218          static void lcd_delay(WORD x)
+ 219          {
  220   1      
- 221   1              for(y=110;y>0;y--);
+ 221   1          WORD y;
  222   1      
- 223   1      }
- 224          
- 225          /*
- 226          画图清屏，由于LCD的清屏指令0X01不能作用在绘图中，所有只能自己写清屏子程序
- 227          */
+ 223   1          for(;x>0;x--)
+ 224   1      
+ 225   1              for(y=110;y>0;y--);
+ 226   1      
+ 227   1      }
  228          
- 229          void clear_lcd(void)
- 230          {    
- 231   1      
- 232   1          BYTE i,j;
- 233   1          write_cmd(0x34);
- 234   1          for(i=0;i<32;i++)             //因为LCD有纵坐标32格所以写三十二次
- 235   1          {
- 236   2              write_cmd(0x80+i);         //先写入纵坐标Y的值
- 237   2              write_cmd(0x80);         //再写入横坐标X的值
- 238   2              for(j=0;j<32;j++)         //横坐标有16位，每位写入两个字节的的数据，也就写入32次
- 239   2              {                         //因为当写入两个字节之后横坐标会自动加1，所以就不用再次写入地址了。
- 240   3                  write_data(0x00);    
- 241   3              }
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 5   
+ 229          /*********************************************************
+ 230          *画图清屏，由于LCD的清屏指令0X01不能作用在绘图中，
+ 231          *所以只能自己写清屏子程序
+ 232          **********************************************************/
+ 233          
+ 234          void clear_lcd(void)
+ 235          {    
+ 236   1      
+ 237   1          BYTE i,j;
+ 238   1          write_cmd(0x34);
+ 239   1          for(i=0;i<32;i++)             //因为LCD有纵坐标32格所以写三十二次
+ 240   1          {
+ 241   2              write_cmd(0x80+i);         //先写入纵坐标Y的值
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 5   
 
- 242   2          }
- 243   1          write_cmd(0x36);
- 244   1          write_cmd(0x30);
- 245   1      }
- 246          #endif
- 247          
- 248          
- 249          
- 250          
- 251          
+ 242   2              write_cmd(0x80);         //再写入横坐标X的值
+ 243   2              for(j=0;j<32;j++)         //横坐标有16位，每位写入两个字节的的数据，也就写入32次
+ 244   2              {                         //因为当写入两个字节之后横坐标会自动加1，所以就不用再次写入地址了。
+ 245   3                  write_data(0x00);    
+ 246   3              }
+ 247   2          }
+ 248   1          write_cmd(0x36);
+ 249   1          write_cmd(0x30);
+ 250   1      }
+ 251          #endif
  252          
- 253          void lcd_init_draw(void)
- 254          {
- 255   1              //write_cmd(0x34);//写指令函数，扩充指令集，绘图关
- 256   1          //write_cmd(0x36);//8位数据传输，扩展指令操作，绘图开 
- 257   1      #if 1    
- 258   1                   
- 259   1          write_cmd(0x3E);//8位数据传输，扩展指令操作，绘图开             
- 260   1          write_cmd(0x01);//清屏 
- 261   1      #else
+ 253          
+ 254          
+ 255          
+ 256          
+ 257          /*********************************************************
+ 258          *初始化LCD的画图功能
+ 259          **********************************************************/
+ 260          void lcd_init_draw(void)
+ 261          {
+ 262   1              //write_cmd(0x34);//写指令函数，扩充指令集，绘图关
+ 263   1          //write_cmd(0x36);//8位数据传输，扩展指令操作，绘图开 
+ 264   1      #if 1    
+ 265   1                   
+ 266   1          write_cmd(0x3E);//8位数据传输，扩展指令操作，绘图开             
+ 267   1          write_cmd(0x01);//清屏 
+ 268   1      #else
                       write_cmd(0x34);
                   write_cmd(0x36);
                  
               #endif
- 266   1      }
- 267          
- 268          BYTE read_data(void)
- 269          {
- 270   1              BYTE dl;
- 271   1              BYTE res;
- 272   1              do {
- 273   2                      dl=rd_com;
- 274   2                      } while((dl&0x80)!=0);  //判忙 
- 275   1          res = rd_data;  
- 276   1          Delay(1);
- 277   1              return res;
- 278   1      }
- 279          
- 280          /*
- 281          
- 282          写入一个点的子程序。具体步骤是：计算出X轴、Y轴的地址、X轴中的第几位，
- 283          然后读出该地址现在的值，因为一般写入新的点的时候，会覆盖掉16个点中其他点，
- 284          当你要同时显示16个点中的两个点的时候就会冲突，所以先将显示中的点读出来，
- 285          然后在或上要点亮的点，这样就可以同时点亮。注意读取数据的时候读取的第一个数据不要，
- 286          从第二数据开始取，也就是说要读取三次，只取后面两次的值。
- 287          还有就是读取数据之前要先写入你要读取数据的地址，读取数据之后的写入数据还要从新写入地址。
- 288          最后就是输入数据地址，先输入Y轴，再输入X轴，输入数据。
- 289          
- 290          */
- 291          
+ 273   1      }
+ 274          
+ 275          
+ 276          /*********************************************************
+ 277          *读取LCD某个地址的数据
+ 278          **********************************************************/
+ 279          BYTE read_data(void)
+ 280          {
+ 281   1              BYTE dl;
+ 282   1              BYTE res;
+ 283   1              do {
+ 284   2                      dl=rd_com;
+ 285   2                      } while((dl&0x80)!=0);  //判忙 
+ 286   1          res = rd_data;  
+ 287   1          Delay(1);
+ 288   1              return res;
+ 289   1      }
+ 290          
+ 291          /*
  292          
- 293          void DrawDots(BYTE x,BYTE y)//打点函数   //x，y为128*64 点阵的坐标
- 294          {
- 295   1      
- 296   1              WORD bt=0,read=0;
- 297   1          BYTE x_adr,y_adr,h_bit,l_bit;
- 298   1      
- 299   1              y_adr=0x80+y%32;//计算Y轴的地址，应为纵坐标有64个，所有对32求余，当Y大于31时，Y的坐标是下半屏的。
- 300   1      
- 301   1              if(y>31) //计算X轴的地址当Y大于31时X的地址在下半屏，从0X88开始，小于31时X的地址是在上半屏，从0X80开始
- 302   1              x_adr=0x88+x/16;        
- 303   1          else
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 6   
+ 293          写入一个点的子程序。具体步骤是：计算出X轴、Y轴的地址、X轴中的第几位，
+ 294          然后读出该地址现在的值，因为一般写入新的点的时候，会覆盖掉16个点中其他点，
+ 295          当你要同时显示16个点中的两个点的时候就会冲突，所以先将显示中的点读出来，
+ 296          然后在或上要点亮的点，这样就可以同时点亮。注意读取数据的时候读取的第一个数据不要，
+ 297          从第二数据开始取，也就是说要读取三次，只取后面两次的值。
+ 298          还有就是读取数据之前要先写入你要读取数据的地址，读取数据之后的写入数据还要从新写入地址。
+ 299          最后就是输入数据地址，先输入Y轴，再输入X轴，输入数据。
+ 300          
+ 301          */
+ 302          void DrawDots(BYTE x,BYTE y)//打点函数   //x，y为128*64 点阵的坐标
+ 303          {
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 6   
 
- 304   1              x_adr=0x80+x/16;
- 305   1      
- 306   1              bt=0x8000>>(x%16); //求这个点到底是在哪个点
+ 304   1      
+ 305   1              WORD bt=0,read=0;
+ 306   1          BYTE x_adr,y_adr,h_bit,l_bit;
  307   1      
- 308   1              write_cmd(0x34);
- 309   1          write_cmd(0x36);
- 310   1          write_cmd(y_adr);     //读取数据的时候要先写入所取数据的地址
- 311   1          write_cmd(x_adr);
- 312   1      
- 313   1              read_data();         //读取的第一个字节不要
+ 308   1              y_adr=0x80+y%32;//计算Y轴的地址，应为纵坐标有64个，所有对32求余，当Y大于31时，Y的坐标是下半屏的。
+ 309   1      
+ 310   1              if(y>31) //计算X轴的地址当Y大于31时X的地址在下半屏，从0X88开始，小于31时X的地址是在上半屏，从0X80开始
+ 311   1              x_adr=0x88+x/16;        
+ 312   1          else
+ 313   1              x_adr=0x80+x/16;
  314   1      
- 315   1              read=read_data();     //从第二个字节开始接收。
- 316   1          read<<=8;
- 317   1          read|=read_data();
- 318   1          bt=bt|read;
- 319   1          h_bit=bt>>8;
- 320   1          l_bit=bt;
+ 315   1              bt=0x8000>>(x%16); //求这个点到底是在哪个点
+ 316   1      
+ 317   1              write_cmd(0x34);
+ 318   1          write_cmd(0x36);
+ 319   1          write_cmd(y_adr);     //读取数据的时候要先写入所取数据的地址
+ 320   1          write_cmd(x_adr);
  321   1      
- 322   1              write_cmd(y_adr);     //写入点的时候，重新写入地址，因为地址已经改变。
- 323   1          write_cmd(x_adr);
- 324   1          write_data(h_bit);
- 325   1          write_data(l_bit);
- 326   1      
- 327   1              write_cmd(0x36); //开显示
- 328   1          write_cmd(0x30);     //转回基本指令集   
- 329   1      }
- 330          
- 331          
- 332          void DrawDots2(BYTE x,BYTE y,BYTE color)//打点函数   //x，y为128*64 点阵的坐标
- 333          {
- 334   1           BYTE row,xlabel,xlabel_bit; 
- 335   1           BYTE Read_H=0,Read_L=0;  
- 336   1           write_cmd(0x34);       //扩充指令 
- 337   1           write_cmd(0x36);       //绘图指令 
- 338   1           xlabel=x>>4;            //确定水平坐标地址
- 339   1           xlabel_bit=x & 0x0F; // 细分水平坐标中的第几位
- 340   1           
- 341   1               if(y<32) 
- 342   1                      row=y;
- 343   1           else{
- 344   2                  row=y-32;
- 345   2                      xlabel+=8;      
- 346   2               } 
- 347   1           write_cmd(row+0x80);
- 348   1           write_cmd(xlabel+0x80);
- 349   1           read_data();
- 350   1           Read_H=read_data();
- 351   1           Read_L=read_data();   
- 352   1           write_cmd(row+0x80);
- 353   1           write_cmd(xlabel+0x80);   //水平坐标地址+基址=显示的水平地址   
- 354   1           if(xlabel_bit<8) 
- 355   1           {
- 356   2                switch(color)
- 357   2               {
- 358   3                   case 0:Read_H &=(~(0x01<<(7-xlabel_bit))); break; //变暗 ，看不见
- 359   3                   case 1:Read_H |=(0x01<<(7-xlabel_bit)); break; //变亮  ，看得见
- 360   3                   case 2:Read_H ^=(0x01<<(7-xlabel_bit)); break; //反转
- 361   3                   default:break;
- 362   3                } 
- 363   2               write_data(Read_H);
- 364   2               write_data(Read_L); 
- 365   2           } 
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 7   
+ 322   1              read_data();         //读取的第一个字节不要
+ 323   1      
+ 324   1              read=read_data();     //从第二个字节开始接收。
+ 325   1          read<<=8;
+ 326   1          read|=read_data();
+ 327   1          bt=bt|read;
+ 328   1          h_bit=bt>>8;
+ 329   1          l_bit=bt;
+ 330   1      
+ 331   1              write_cmd(y_adr);     //写入点的时候，重新写入地址，因为地址已经改变。
+ 332   1          write_cmd(x_adr);
+ 333   1          write_data(h_bit);
+ 334   1          write_data(l_bit);
+ 335   1      
+ 336   1              write_cmd(0x36); //开显示
+ 337   1          write_cmd(0x30);     //转回基本指令集   
+ 338   1      }
+ 339          
+ 340          /*********************************************************
+ 341          *将指定的坐标点亮或者熄灭或者变暗
+ 342          **********************************************************/
+ 343          void DrawDots2(BYTE x,BYTE y,BYTE color)//打点函数   //x，y为128*64 点阵的坐标
+ 344          {
+ 345   1           BYTE row,xlabel,xlabel_bit; 
+ 346   1           BYTE Read_H=0,Read_L=0;  
+ 347   1           write_cmd(0x34);       //扩充指令 
+ 348   1           write_cmd(0x36);       //绘图指令 
+ 349   1           xlabel=x>>4;            //确定水平坐标地址
+ 350   1           xlabel_bit=x & 0x0F; // 细分水平坐标中的第几位
+ 351   1           
+ 352   1               if(y<32) 
+ 353   1                      row=y;
+ 354   1           else{
+ 355   2                  row=y-32;
+ 356   2                      xlabel+=8;      
+ 357   2               } 
+ 358   1           write_cmd(row+0x80);
+ 359   1           write_cmd(xlabel+0x80);
+ 360   1           read_data();
+ 361   1           Read_H=read_data();
+ 362   1           Read_L=read_data();   
+ 363   1           write_cmd(row+0x80);
+ 364   1           write_cmd(xlabel+0x80);   //水平坐标地址+基址=显示的水平地址   
+ 365   1           if(xlabel_bit<8) 
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 7   
 
- 366   1           else 
- 367   1           {
- 368   2                switch(color)
- 369   2                {
- 370   3                     case 0:Read_L &=(~(0x01<<(15-xlabel_bit))); break; //变暗    ，看不见 
- 371   3                     case 1:Read_L |=(0x01<<(15-xlabel_bit)); break; //变亮  ，看得见
- 372   3                     case 2:Read_L ^=(0x01<<(15-xlabel_bit)); break; //反转 
- 373   3                     default:break;
- 374   3                } 
- 375   2                write_data(Read_H);
- 376   2                write_data(Read_L);
- 377   2           } 
- 378   1           write_cmd(0x30);//恢复正常模式  
- 379   1      }
- 380          void ShowXY(void)
- 381          {
- 382   1              BYTE i = 0,     x = 0,y = 0;
- 383   1              
- 384   1          for(i=0;i<62;i++) //画出Y轴
- 385   1          {
- 386   2              DrawDots(2,i);
- 387   2          }
- 388   1      
- 389   1          for(i=2;i<128;i++)
- 390   1          {
- 391   2              x=i;
- 392   2              //y=32-x%32;
- 393   2              DrawDots(x,61);
- 394   2          }
- 395   1              for(i = 0;i < 2;i++)
- 396   1              {
- 397   2                       DrawDots(126-i,60-i);
- 398   2                       DrawDots(3+i,1+i);
- 399   2      
- 400   2                       DrawDots(126-i,62+i);
- 401   2                       DrawDots(1-i,1+i);
- 402   2              }
- 403   1      }
- 404          extern WORD new_temprature[BUF_LEN];
- 405          extern WORD old_temprature[BUF_LEN];
- 406          
- 407          void ShowScaleLine(BYTE x,BYTE width,WORD var,WORD base,WORD precision)
- 408          {
- 409   1         BYTE i = 0,j = 0;
- 410   1         BYTE height = (var - base)/precision;
- 411   1         for(j = 0; j < height;j++)
- 412   1         {
- 413   2                 for(i = 0;i < width;i++)
- 414   2                 {
- 415   3                              DrawDots(x+i,60-j);
- 416   3                 }
- 417   2         }
- 418   1      }
- 419          
- 420          extern WORD g_base;
+ 366   1           {
+ 367   2                switch(color)
+ 368   2               {
+ 369   3                   case 0:Read_H &=(~(0x01<<(7-xlabel_bit))); break; //变暗 ，看不见
+ 370   3                   case 1:Read_H |=(0x01<<(7-xlabel_bit)); break; //变亮  ，看得见
+ 371   3                   case 2:Read_H ^=(0x01<<(7-xlabel_bit)); break; //反转
+ 372   3                   default:break;
+ 373   3                } 
+ 374   2               write_data(Read_H);
+ 375   2               write_data(Read_L); 
+ 376   2           } 
+ 377   1           else 
+ 378   1           {
+ 379   2                switch(color)
+ 380   2                {
+ 381   3                     case 0:Read_L &=(~(0x01<<(15-xlabel_bit))); break; //变暗    ，看不见 
+ 382   3                     case 1:Read_L |=(0x01<<(15-xlabel_bit)); break; //变亮  ，看得见
+ 383   3                     case 2:Read_L ^=(0x01<<(15-xlabel_bit)); break; //反转 
+ 384   3                     default:break;
+ 385   3                } 
+ 386   2                write_data(Read_H);
+ 387   2                write_data(Read_L);
+ 388   2           } 
+ 389   1           write_cmd(0x30);//恢复正常模式  
+ 390   1      }
+ 391          
+ 392          
+ 393          /*********************************************************
+ 394          *画XY坐标轴
+ 395          **********************************************************/
+ 396          void ShowXY(void)
+ 397          {
+ 398   1              BYTE i = 0;
+ 399   1              
+ 400   1          for(i=0;i<62;i++) //画出Y轴
+ 401   1          {
+ 402   2              DrawDots(2,i);
+ 403   2          }
+ 404   1      
+ 405   1          for(i=2;i<128;i++) //画出X轴
+ 406   1          {
+ 407   2              DrawDots(i,61);
+ 408   2          }
+ 409   1              for(i = 0;i < 2;i++)//画箭头
+ 410   1              {
+ 411   2                       DrawDots(126-i,60-i);
+ 412   2                       DrawDots(3+i,1+i);
+ 413   2      
+ 414   2                       DrawDots(126-i,62+i);
+ 415   2                       DrawDots(1-i,1+i);
+ 416   2              }
+ 417   1      }
+ 418          extern WORD new_temprature[BUF_LEN];
+ 419          extern WORD old_temprature[BUF_LEN];
+ 420          
  421          
- 422          
- 423          void UpdateScaleLine()
- 424          {
- 425   1      
- 426   1              BYTE i = 0,j = 0,k=0;
- 427   1              BYTE x = 0,y = 0;
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 8   
+ 422          /*********************************************************
+ 423          *在指定的X处开始画柱状图，
+ 424          width表示宽度，
+ 425          var表示柱状图要表示的数值
+ 426          base表示基准值--纵坐标为零对应的温度值--目前采用上电开机以后第一次读取到的温度减1作为基准值
+ 427          precision表示纵坐标每一格代表的温度值的100倍（单片机处理浮点数很慢--扩大一百倍变为正数处理）
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 8   
 
- 428   1              BYTE action = 0;
- 429   1              WORD delta = 0;
- 430   1              BYTE new_h = 0;
- 431   1              BYTE old_h = 0;
- 432   1      
- 433   1              for(i = 0;i < BUF_LEN;i++)
- 434   1              {
- 435   2                      if(new_temprature[i] == 0)
- 436   2                              continue;
- 437   2                      if(new_temprature[i] > g_base)
- 438   2                              new_h = (new_temprature[i] - g_base)/SCALE_LINE_PRECISION;
- 439   2                      else
- 440   2                              new_h = 0;
- 441   2      
- 442   2                      if(new_h > 61)
- 443   2                              new_h = 61;
- 444   2      
- 445   2                      if(old_temprature[i] > g_base)
- 446   2                              old_h = (old_temprature[i] - g_base)/SCALE_LINE_PRECISION;
- 447   2                      else 
- 448   2                              old_h = 0;
- 449   2      
- 450   2                      if(old_h > 61)
- 451   2                              old_h = 61;
- 452   2                      
- 453   2                      if(new_h == old_h)
- 454   2                              continue;
- 455   2                      else if(new_h > old_h)
- 456   2                      {
- 457   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
- 458   3                              y = 61 - old_h;
- 459   3                              for(k = 0;k < (new_h - old_h);k++)
- 460   3                               {
- 461   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
- 462   4                                       {
- 463   5                                               DrawDots2(x+j,y-1-k,1);
- 464   5                                       }
- 465   4                               }
- 466   3                              
- 467   3                      }
- 468   2                      else if (new_h < old_h)
- 469   2                      {
- 470   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
- 471   3                              y = 61 - old_h;
- 472   3                              for(k = 0;k < (old_h - new_h);k++)
- 473   3                               {
- 474   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
- 475   4                                       {
- 476   5                                               DrawDots2(x+j,y+k,0);
- 477   5                                       }
- 478   4                               }
- 479   3                      }
- 480   2              }
- 481   1      
- 482   1      }
+ 428                           这里用宏定义为5，原温度值就是（5/100=0.05度），也就是纵坐标每一格代表0.05度
+ 429                           所以，对于60个纵坐标格子最多能表示的温度变化范围是3度。
+ 430          **********************************************************/
+ 431          void ShowScaleLine(BYTE x,BYTE width,WORD var,WORD base,WORD precision)
+ 432          {
+ 433   1         BYTE i = 0,j = 0;
+ 434   1         BYTE height = (var - base)/precision;
+ 435   1         for(j = 0; j < height;j++)
+ 436   1         {
+ 437   2                 for(i = 0;i < width;i++)
+ 438   2                 {
+ 439   3                              DrawDots(x+i,60-j);
+ 440   3                 }
+ 441   2         }
+ 442   1      }
+ 443          
+ 444          extern WORD g_base;
+ 445          
+ 446          /*********************************************************
+ 447          *更新柱状图--利用修改增量的方式更新柱状图
+ 448          *柱状图高度 = （当前温度值 - 基准值）/ 精度值
+ 449          *当前温度值：就是最新采集到的历史数据
+ 450          *基准值：（第一次上电以后获得的温度值 - 1）对应的浮点数 x 100变为整数
+ 451          **********************************************************/
+ 452          void UpdateScaleLine()
+ 453          {
+ 454   1      
+ 455   1              BYTE i = 0,j = 0,k=0;
+ 456   1              BYTE x = 0,y = 0;
+ 457   1              
+ 458   1              BYTE new_h = 0;
+ 459   1              BYTE old_h = 0;
+ 460   1      
+ 461   1              for(i = 0;i < BUF_LEN;i++) //循环BUF_LEN，每次更新一条柱状--共有BUF_LEN个历史数据
+ 462   1              {
+ 463   2                      if(new_temprature[i] == 0)//新采集的温度为0--表示还没有采集到对应的历史数据（刚刚开机不久）
+ 464   2                              continue;
+ 465   2                      if(new_temprature[i] > g_base)//由于g_base是上电以后的（第一个温度值-1），所以在短时间内，新采集到的数据
+             -都会大于这个值
+ 466   2                              new_h = (new_temprature[i] - g_base)/SCALE_LINE_PRECISION;
+ 467   2                      else
+ 468   2                              new_h = 0;      //如果新采集的温度小于基准值--就将新的高度设置为0
+ 469   2      
+ 470   2                      if(new_h > 61)  //如果新采集的数据对应的高度超过纵坐标能支持的最大高度，强制设置为最大高度61
+ 471   2                              new_h = 61;
+ 472   2      
+ 473   2                      if(old_temprature[i] > g_base)//参考前面的注释
+ 474   2                              old_h = (old_temprature[i] - g_base)/SCALE_LINE_PRECISION;
+ 475   2                      else 
+ 476   2                              old_h = 0;
+ 477   2      
+ 478   2                      if(old_h > 61)
+ 479   2                              old_h = 61;
+ 480   2                      
+ 481   2                      if(new_h == old_h)//两次高度相等
+ 482   2                              continue;
+ 483   2                      else if(new_h > old_h) //新高度较高--表示需要在当前的基础上增加一段高度
+ 484   2                      {
+ 485   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);//旧柱状图的左上顶点的X坐标
+ 486   3                              y = 61 - old_h; //旧柱状图的左上顶点的Y坐标
+ 487   3                              for(k = 0;k < (new_h - old_h);k++)
+ 488   3                               {
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 21:09:00 PAGE 9   
+
+ 489   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 490   4                                       {
+ 491   5                                               DrawDots2(x+j,y-1-k,1); //Y坐标需要在旧坐标的基础上再往上跳一格开始增加指定高度
+ 492   5                                       }
+ 493   4                               }
+ 494   3                              
+ 495   3                      }
+ 496   2                      else if (new_h < old_h)//新高度较矮--表示需要在当前的基础上减去一段高度
+ 497   2                      {
+ 498   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
+ 499   3                              y = 61 - old_h;
+ 500   3                              for(k = 0;k < (old_h - new_h);k++)
+ 501   3                               {
+ 502   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 503   4                                       {
+ 504   5                                               DrawDots2(x+j,y+k,0); //Y坐标在旧坐标的基础上直接减少指定高度
+ 505   5                                       }
+ 506   4                               }
+ 507   3                      }
+ 508   2              }
+ 509   1      
+ 510   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   2508    ----
+   CODE SIZE        =   2492    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----      82
+   XDATA SIZE       =   ----      77
    PDATA SIZE       =   ----    ----
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 9   
-
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
