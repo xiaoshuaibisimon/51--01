@@ -268,7 +268,7 @@ void main()
 	
 	BYTE key_num = 0;
 	BYTE status = 1;
-	//BYTE i = 0;
+	
 	BYTE show_scale_line_flag = 0;
 	BYTE first_time_scale = 0;	
 	SP=0x60;
@@ -302,7 +302,7 @@ void main()
 					show_scale_line_flag = 1;
 					TimerInit();
 				}
-				else{
+				else if(key_num == 1 ||key_num == 2){
 					 ET0 = 0; //≤ª‘ –ÌT0÷–∂œ
 					 TR0 = 0;  
 		  			lcd_init();

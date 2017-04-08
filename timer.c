@@ -8,7 +8,7 @@ void TimerInit(void)
     TL0  = 0x3C; //50ms定时
     TH0  = 0xB0;
 
-    timer_key = 400;
+    timer_key = 100;
 
     ET0 = 1; //允许T0中断                                                      
     EA  = 1; //开放中断
@@ -24,7 +24,7 @@ void Timer_Routine(void) interrupt 1
 
     if(0 == timer_key){
        
-       timer_key = 400;
+       timer_key = 100;
 	   scale_line_status = 1;
     }        
 }

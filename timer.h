@@ -4,5 +4,7 @@
 #include "sys.h"
 
 void TimerInit(void);
+void UpdateNewTemprature();
+void UpdateOldTemprature();
 
 #endif

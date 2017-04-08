@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 1   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE LCD12864
@@ -62,7 +62,7 @@ line level    source
   53   1          BYTE address;
   54   1          if(line == 1)
   55   1          {
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 2   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 2   
 
   56   2              address = 0x80 + column;
   57   2          }
@@ -126,7 +126,7 @@ line level    source
  115          {
  116   1              BYTE dhi,dli,ddi,dei;
  117   1              unsigned long datah;
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 3   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 3   
 
  118   1              unsigned long datal;
  119   1              datah=dat;
@@ -190,7 +190,7 @@ line level    source
  177   2                        dat=1;
  178   2                for (dli=0;dli<N;dli++)
  179   2                        {
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 4   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 4   
 
  180   3                              dat*=10;
  181   3                        }
@@ -254,7 +254,7 @@ line level    source
  239   2              {                         //因为当写入两个字节之后横坐标会自动加1，所以就不用再次写入地址了。
  240   3                  write_data(0x00);    
  241   3              }
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 5   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 5   
 
  242   2          }
  243   1          write_cmd(0x36);
@@ -318,7 +318,7 @@ line level    source
  301   1              if(y>31) //计算X轴的地址当Y大于31时X的地址在下半屏，从0X88开始，小于31时X的地址是在上半屏，从0X80开始
  302   1              x_adr=0x88+x/16;        
  303   1          else
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 6   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 6   
 
  304   1              x_adr=0x80+x/16;
  305   1      
@@ -382,7 +382,7 @@ line level    source
  363   2               write_data(Read_H);
  364   2               write_data(Read_L); 
  365   2           } 
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 7   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 7   
 
  366   1           else 
  367   1           {
@@ -446,7 +446,7 @@ line level    source
  425   1      
  426   1              BYTE i = 0,j = 0,k=0;
  427   1              BYTE x = 0,y = 0;
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 8   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 8   
 
  428   1              BYTE action = 0;
  429   1              WORD delta = 0;
@@ -510,7 +510,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----      82
    PDATA SIZE       =   ----    ----
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 9   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 20:27:01 PAGE 9   
 
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
