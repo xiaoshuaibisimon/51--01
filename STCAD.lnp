@@ -1,0 +1,10 @@
+"STARTUP.obj",
+"DS18B20.obj",
+"stc12c.obj",
+"LCD12864.obj",
+"main.obj",
+"sys.obj",
+"DS12887.obj",
+"timer.obj" 
+TO "STCAD" 
+RAMSIZE(256) 

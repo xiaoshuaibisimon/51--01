@@ -1,0 +1,608 @@
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE LCD12864
+OBJECT MODULE PLACED IN LCD12864.OBJ
+COMPILER INVOKED BY: D:\Keil\C51\BIN\C51.EXE LCD12864.c LARGE BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          
+   2          #include "LCD12864.h"
+   3          
+   4          
+   5          /************************************************************************
+   6          Function name:       write_cmd 
+   7          Descriptions:        向lcd输入指令 
+   8          ************************************************************************/
+   9          void write_cmd(BYTE cmd)
+  10          {   
+  11   1              BYTE dl;
+  12   1              do {
+  13   2                      dl=rd_com;
+  14   2                      } while((dl&0x80)!=0);  //判忙 
+  15   1          wr_com= cmd;
+  16   1          Delay(1);
+  17   1      }
+  18          
+  19          
+  20          /**********************************************************************
+  21          Function name:       write_data 
+  22          Descriptions:        写入数据 
+  23          **********************************************************************/
+  24          void write_data(BYTE dat)       
+  25          {
+  26   1              BYTE dl;
+  27   1              do {
+  28   2                      dl=rd_com;
+  29   2                      } while((dl&0x80)!=0);  //判忙 
+  30   1          wr_data= dat;  
+  31   1          Delay(1);
+  32   1      }  
+  33          
+  34          /***********************************************************************
+  35          Function name:       write_string 
+  36          Descriptions:        写入字符串 
+  37          ***********************************************************************/
+  38          void write_string(BYTE *s)                                                                                               
+  39          {
+  40   1          while(*s != '\0')            //'\0'为字符串结束标志 
+  41   1          {
+  42   2              write_data(*s);
+  43   2              s++;
+  44   2          }
+  45   1      }
+  46          
+  47          /**********************************************************************
+  48          Function name:       set_display_place
+  49          Descriptions:        设置字符的显示位置 
+  50          **********************************************************************/
+  51          void set_display_place(BYTE line,column)
+  52          {
+  53   1          BYTE address;
+  54   1          if(line == 1)
+  55   1          {
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 2   
+
+  56   2              address = 0x80 + column;
+  57   2          }
+  58   1          else if(line == 2)
+  59   1          {
+  60   2              address = 0x90 + column;
+  61   2          }
+  62   1          else if(line == 3)
+  63   1          {
+  64   2              address = 0x88 + column;
+  65   2          }
+  66   1          else if(line == 4)
+  67   1          {
+  68   2              address = 0x98 + column;
+  69   2          }
+  70   1          write_cmd(address);         
+  71   1      }
+  72          
+  73          /*******************************************************************
+  74          Function name:       将字符串写到指定的位置 
+  75          Descriptions:        将字符串显示在lcd的特定位置 
+  76          *******************************************************************/
+  77          void write_string_lcd(BYTE line,column,unsigned char *string)
+  78          {
+  79   1          set_display_place(line,column);
+  80   1          write_string(string);
+  81   1          Delay(1);
+  82   1      }
+  83          
+  84          /***************************************************
+  85          ************液晶模块初始化******************************
+  86          ****************************************************/
+  87          void lcd_init(void)                               
+  88          {
+  89   1        write_cmd(0x30);//功能设置，一次送8位数据，基本指令集 
+  90   1        write_cmd(0x30);//功能设置，一次送8位数据，基本指令集 
+  91   1        write_cmd(0x0C);//0000,1100 整体显示，游标off，游标位置off
+  92   1        write_cmd(0x01);//0000,0001 清DDRAM 
+  93   1        write_cmd(0x06);//02
+  94   1      }
+  95          
+  96          /*****************设置数据显示位置********************/
+  97          /****数值显示0—65535,column为数字起始位置:0,1,2...****/
+  98          void seti_wl(BYTE line,column) 
+  99          {
+ 100   1              BYTE dli;
+ 101   1              dli=column%2;
+ 102   1              column/=2;
+ 103   1              set_display_place(line,column);
+ 104   1              if (dli==1)
+ 105   1              {
+ 106   2                      dli=0x20;
+ 107   2                      write_data(dli);        
+ 108   2              }
+ 109   1      }
+ 110          
+ 111          /***************************************************
+ 112          ************显示长整型数据***************************
+ 113          ****************************************************/
+ 114          void crti(unsigned long dat) 
+ 115          {
+ 116   1              BYTE dhi,dli,ddi,dei;
+ 117   1              unsigned long datah;
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 3   
+
+ 118   1              unsigned long datal;
+ 119   1              datah=dat;
+ 120   1              dhi=0;
+ 121   1              if (datah>=10)
+ 122   1              {
+ 123   2                      do
+ 124   2                      {               
+ 125   3                              datah/=10;
+ 126   3                              dhi++;
+ 127   3                      }while(datah>=10);
+ 128   2                      datah=dat;
+ 129   2                      ddi=dhi;
+ 130   2                      for (dli=0;dli<dhi;dli++)
+ 131   2                      {
+ 132   3                              datal=1;
+ 133   3                              for (dei=0;dei<ddi;dei++)
+ 134   3                              {
+ 135   4                                      datal*=10;
+ 136   4                              }
+ 137   3                              datah=dat/datal;
+ 138   3                              dat=dat%datal;
+ 139   3                              datah+=0x30;
+ 140   3                              write_data(datah);
+ 141   3                              ddi--;
+ 142   3                      }
+ 143   2                      dat+=0x30;
+ 144   2                      write_data(dat);
+ 145   2              }
+ 146   1              else
+ 147   1              {
+ 148   2                      dat=dat+0x30;
+ 149   2                      write_data(dat);
+ 150   2              }
+ 151   1      }
+ 152           
+ 153          /***************************************************
+ 154          ************浮点数显示******************************
+ 155          ****************************************************/
+ 156          void crt_r(float x,unsigned char N)
+ 157          {
+ 158   1               BYTE dli;
+ 159   1           unsigned int  dath;
+ 160   1               unsigned int  datl;
+ 161   1               unsigned int  dat;
+ 162   1               
+ 163   1               if (x<0.0)
+ 164   1               {
+ 165   2                      dat=0x2d;
+ 166   2                      write_data(dat);
+ 167   2                      Delay(1);
+ 168   2                      x=fabs(x);
+ 169   2               }
+ 170   1           dath=(int)x;       
+ 171   1           crti(dath);
+ 172   1           if (N>0)
+ 173   1           {
+ 174   2                dat=0x2e;
+ 175   2                write_data(dat);
+ 176   2                        Delay(1);
+ 177   2                        dat=1;
+ 178   2                for (dli=0;dli<N;dli++)
+ 179   2                        {
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 4   
+
+ 180   3                              dat*=10;
+ 181   3                        }
+ 182   2                        dath=(int)(x*dat)-dath*dat;
+ 183   2                        for (dli=1;dli<N;dli++)
+ 184   2                        {
+ 185   3                              dat /= 10;
+ 186   3                              datl=dath/dat;
+ 187   3                              datl += 0x30;
+ 188   3                              write_data(datl);
+ 189   3                              dath %= dat;
+ 190   3                        }
+ 191   2                        crti(dath);
+ 192   2           }  
+ 193   1      }
+ 194          
+ 195          
+ 196          
+ 197          
+ 198          
+ 199          
+ 200          #ifdef MY_LCD
+ 201          
+ 202          
+ 203          /******************************************************************
+ 204          Function name:       将字符写到指定的位置 
+ 205          Descriptions:        将字符串显示在lcd的特定位置 
+ 206          *******************************************************************/
+ 207          void write_data_lcd(BYTE line,column,dat)
+ 208          {
+ 209   1          set_display_place(line,column);
+ 210   1          write_data(dat);
+ 211   1          Delay(1);
+ 212   1      }
+ 213          
+ 214          static void lcd_delay(WORD x)
+ 215          {
+ 216   1      
+ 217   1          WORD y;
+ 218   1      
+ 219   1          for(;x>0;x--)
+ 220   1      
+ 221   1              for(y=110;y>0;y--);
+ 222   1      
+ 223   1      }
+ 224          
+ 225          /*
+ 226          画图清屏，由于LCD的清屏指令0X01不能作用在绘图中，所有只能自己写清屏子程序
+ 227          */
+ 228          
+ 229          void clear_lcd(void)
+ 230          {    
+ 231   1      
+ 232   1          BYTE i,j;
+ 233   1          write_cmd(0x34);
+ 234   1          for(i=0;i<32;i++)             //因为LCD有纵坐标32格所以写三十二次
+ 235   1          {
+ 236   2              write_cmd(0x80+i);         //先写入纵坐标Y的值
+ 237   2              write_cmd(0x80);         //再写入横坐标X的值
+ 238   2              for(j=0;j<32;j++)         //横坐标有16位，每位写入两个字节的的数据，也就写入32次
+ 239   2              {                         //因为当写入两个字节之后横坐标会自动加1，所以就不用再次写入地址了。
+ 240   3                  write_data(0x00);    
+ 241   3              }
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 5   
+
+ 242   2          }
+ 243   1          write_cmd(0x36);
+ 244   1          write_cmd(0x30);
+ 245   1      }
+ 246          #endif
+ 247          
+ 248          
+ 249          
+ 250          
+ 251          
+ 252          
+ 253          void lcd_init_draw(void)
+ 254          {
+ 255   1              //write_cmd(0x34);//写指令函数，扩充指令集，绘图关
+ 256   1          //write_cmd(0x36);//8位数据传输，扩展指令操作，绘图开 
+ 257   1      #if 1    
+ 258   1                   
+ 259   1          write_cmd(0x3E);//8位数据传输，扩展指令操作，绘图开             
+ 260   1          write_cmd(0x01);//清屏 
+ 261   1      #else
+                      write_cmd(0x34);
+                  write_cmd(0x36);
+                 
+              #endif
+ 266   1      }
+ 267          
+ 268          BYTE read_data(void)
+ 269          {
+ 270   1              BYTE dl;
+ 271   1              BYTE res;
+ 272   1              do {
+ 273   2                      dl=rd_com;
+ 274   2                      } while((dl&0x80)!=0);  //判忙 
+ 275   1          res = rd_data;  
+ 276   1          Delay(1);
+ 277   1              return res;
+ 278   1      }
+ 279          
+ 280          /*
+ 281          
+ 282          写入一个点的子程序。具体步骤是：计算出X轴、Y轴的地址、X轴中的第几位，
+ 283          然后读出该地址现在的值，因为一般写入新的点的时候，会覆盖掉16个点中其他点，
+ 284          当你要同时显示16个点中的两个点的时候就会冲突，所以先将显示中的点读出来，
+ 285          然后在或上要点亮的点，这样就可以同时点亮。注意读取数据的时候读取的第一个数据不要，
+ 286          从第二数据开始取，也就是说要读取三次，只取后面两次的值。
+ 287          还有就是读取数据之前要先写入你要读取数据的地址，读取数据之后的写入数据还要从新写入地址。
+ 288          最后就是输入数据地址，先输入Y轴，再输入X轴，输入数据。
+ 289          
+ 290          */
+ 291          
+ 292          
+ 293          void DrawDots(BYTE x,BYTE y)//打点函数   //x，y为128*64 点阵的坐标
+ 294          {
+ 295   1      
+ 296   1              WORD bt=0,read=0;
+ 297   1          BYTE x_adr,y_adr,h_bit,l_bit;
+ 298   1      
+ 299   1              y_adr=0x80+y%32;//计算Y轴的地址，应为纵坐标有64个，所有对32求余，当Y大于31时，Y的坐标是下半屏的。
+ 300   1      
+ 301   1              if(y>31) //计算X轴的地址当Y大于31时X的地址在下半屏，从0X88开始，小于31时X的地址是在上半屏，从0X80开始
+ 302   1              x_adr=0x88+x/16;        
+ 303   1          else
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 6   
+
+ 304   1              x_adr=0x80+x/16;
+ 305   1      
+ 306   1              bt=0x8000>>(x%16); //求这个点到底是在哪个点
+ 307   1      
+ 308   1              write_cmd(0x34);
+ 309   1          write_cmd(0x36);
+ 310   1          write_cmd(y_adr);     //读取数据的时候要先写入所取数据的地址
+ 311   1          write_cmd(x_adr);
+ 312   1      
+ 313   1              read_data();         //读取的第一个字节不要
+ 314   1      
+ 315   1              read=read_data();     //从第二个字节开始接收。
+ 316   1          read<<=8;
+ 317   1          read|=read_data();
+ 318   1          bt=bt|read;
+ 319   1          h_bit=bt>>8;
+ 320   1          l_bit=bt;
+ 321   1      
+ 322   1              write_cmd(y_adr);     //写入点的时候，重新写入地址，因为地址已经改变。
+ 323   1          write_cmd(x_adr);
+ 324   1          write_data(h_bit);
+ 325   1          write_data(l_bit);
+ 326   1      
+ 327   1              write_cmd(0x36); //开显示
+ 328   1          write_cmd(0x30);     //转回基本指令集   
+ 329   1      }
+ 330          
+ 331          
+ 332          void DrawDots2(BYTE x,BYTE y,BYTE color)//打点函数   //x，y为128*64 点阵的坐标
+ 333          {
+ 334   1           BYTE row,xlabel,xlabel_bit; 
+ 335   1           BYTE Read_H=0,Read_L=0;  
+ 336   1           write_cmd(0x34);       //扩充指令 
+ 337   1           write_cmd(0x36);       //绘图指令 
+ 338   1           xlabel=x>>4;            //确定水平坐标地址
+ 339   1           xlabel_bit=x & 0x0F; // 细分水平坐标中的第几位
+ 340   1           
+ 341   1               if(y<32) 
+ 342   1                      row=y;
+ 343   1           else{
+ 344   2                  row=y-32;
+ 345   2                      xlabel+=8;      
+ 346   2               } 
+ 347   1           write_cmd(row+0x80);
+ 348   1           write_cmd(xlabel+0x80);
+ 349   1           read_data();
+ 350   1           Read_H=read_data();
+ 351   1           Read_L=read_data();   
+ 352   1           write_cmd(row+0x80);
+ 353   1           write_cmd(xlabel+0x80);   //水平坐标地址+基址=显示的水平地址   
+ 354   1           if(xlabel_bit<8) 
+ 355   1           {
+ 356   2                switch(color)
+ 357   2               {
+ 358   3                   case 0:Read_H &=(~(0x01<<(7-xlabel_bit))); break; //变暗 ，看不见
+ 359   3                   case 1:Read_H |=(0x01<<(7-xlabel_bit)); break; //变亮  ，看得见
+ 360   3                   case 2:Read_H ^=(0x01<<(7-xlabel_bit)); break; //反转
+ 361   3                   default:break;
+ 362   3                } 
+ 363   2               write_data(Read_H);
+ 364   2               write_data(Read_L); 
+ 365   2           } 
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 7   
+
+ 366   1           else 
+ 367   1           {
+ 368   2                switch(color)
+ 369   2                {
+ 370   3                     case 0:Read_L &=(~(0x01<<(15-xlabel_bit))); break; //变暗    ，看不见 
+ 371   3                     case 1:Read_L |=(0x01<<(15-xlabel_bit)); break; //变亮  ，看得见
+ 372   3                     case 2:Read_L ^=(0x01<<(15-xlabel_bit)); break; //反转 
+ 373   3                     default:break;
+ 374   3                } 
+ 375   2                write_data(Read_H);
+ 376   2                write_data(Read_L);
+ 377   2           } 
+ 378   1           write_cmd(0x30);//恢复正常模式  
+ 379   1      }
+ 380          void ShowXY(void)
+ 381          {
+ 382   1              BYTE i = 0,     x = 0,y = 0;
+ 383   1              
+ 384   1          for(i=0;i<62;i++) //画出Y轴
+ 385   1          {
+ 386   2              DrawDots(2,i);
+ 387   2          }
+ 388   1      
+ 389   1          for(i=2;i<128;i++)
+ 390   1          {
+ 391   2              x=i;
+ 392   2              //y=32-x%32;
+ 393   2              DrawDots(x,61);
+ 394   2          }
+ 395   1              for(i = 0;i < 2;i++)
+ 396   1              {
+ 397   2                       DrawDots(126-i,60-i);
+ 398   2                       DrawDots(3+i,1+i);
+ 399   2      
+ 400   2                       DrawDots(126-i,62+i);
+ 401   2                       DrawDots(1-i,1+i);
+ 402   2              }
+ 403   1      }
+ 404          extern WORD new_temprature[BUF_LEN];
+ 405          extern WORD old_temprature[BUF_LEN];
+ 406          
+ 407          void ShowScaleLine(BYTE x,BYTE width,WORD var,WORD base,WORD precision)
+ 408          {
+ 409   1         BYTE i = 0,j = 0;
+ 410   1         BYTE height = (var - base)/precision;
+ 411   1         for(j = 0; j < height;j++)
+ 412   1         {
+ 413   2                 for(i = 0;i < width;i++)
+ 414   2                 {
+ 415   3                              DrawDots(x+i,60-j);
+ 416   3                 }
+ 417   2         }
+ 418   1      }
+ 419          
+ 420          void GetOldXY(BYTE *x,BYTE *y,BYTE index,WORD base,WORD precision)
+ 421          {
+ 422   1              if(old_temprature[index] == 0)
+ 423   1              {
+ 424   2                      *y = 60;
+ 425   2              }else{
+ 426   2                      *y = 61- ((old_temprature[index] - base)/precision);
+ 427   2              }
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 8   
+
+ 428   1              *x = SCALE_LINE_START_X + (index * SCALE_LINE_INCSIZE); 
+ 429   1      }
+ 430          
+ 431          void HandleScaleLine(BYTE x,BYTE y,BYTE action,WORD delta,WORD precision)
+ 432          {
+ 433   1               BYTE i = 0,j = 0;
+ 434   1               BYTE height = delta/precision;
+ 435   1               if(action == 0)
+ 436   1               {
+ 437   2                      return ;                
+ 438   2               }
+ 439   1               else if(action == 1)
+ 440   1               {
+ 441   2                       for(i = 0;i < height;i++)
+ 442   2                       {
+ 443   3                               for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 444   3                               {
+ 445   4                                       DrawDots2(x+j,y-i,1);
+ 446   4                               }
+ 447   3                       }
+ 448   2               }
+ 449   1               else if(action == 2)
+ 450   1               {
+ 451   2                       for(i = 0;i < height;i++)
+ 452   2                       {
+ 453   3                               for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 454   3                               {
+ 455   4                                       DrawDots2(x+j,y+i,0);
+ 456   4                               }
+ 457   3                       }
+ 458   2               }
+ 459   1      }
+ 460          extern WORD g_base;
+ 461          void UpdateScaleLine()
+ 462          {
+ 463   1      
+ 464   1              BYTE i = 0,j = 0;
+ 465   1              BYTE x = 0,y = 0;
+ 466   1              BYTE action = 0;
+ 467   1              WORD delta = 0;
+ 468   1              for(i = 0;i < BUF_LEN;i++)
+ 469   1              {
+ 470   2                      if(new_temprature[i] > old_temprature[i])
+ 471   2                      {
+ 472   3                              delta =  new_temprature[i] - old_temprature[i];
+ 473   3                              action = 1;
+ 474   3                      }
+ 475   2                      else if(new_temprature[i] < old_temprature[i])
+ 476   2                      {
+ 477   3                              delta =  old_temprature[i] - new_temprature[i];
+ 478   3                              action = 2;
+ 479   3                      }
+ 480   2                      else
+ 481   2                      {
+ 482   3                              delta = 0; 
+ 483   3                              action = 0;
+ 484   3                              continue;
+ 485   3                      }
+ 486   2      
+ 487   2                      GetOldXY(&x,&y,i,g_base,SCALE_LINE_PRECISION);
+ 488   2                      HandleScaleLine(x,y,action,delta,SCALE_LINE_PRECISION);
+ 489   2              }
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 9   
+
+ 490   1      
+ 491   1      }
+ 492          
+ 493          
+ 494          void UpdateScaleLine2()
+ 495          {
+ 496   1              BYTE i = 0;
+ 497   1      
+ 498   1              clear_lcd();
+ 499   1              ShowXY();
+ 500   1              for(i = 0;i < BUF_LEN;i++)
+ 501   1              {        
+ 502   2                       ShowScaleLine(SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE),SCALE_LINE_WIDTH,new_temprature[i],g_base,S
+             -CALE_LINE_PRECISION);
+ 503   2              }
+ 504   1      
+ 505   1      }
+ 506          
+ 507          void UpdateScaleLine3()
+ 508          {
+ 509   1      
+ 510   1              BYTE i = 0,j = 0,k=0;
+ 511   1              BYTE x = 0,y = 0;
+ 512   1              BYTE action = 0;
+ 513   1              WORD delta = 0;
+ 514   1              BYTE new_h = 0;
+ 515   1              BYTE old_h = 0;
+ 516   1      
+ 517   1              for(i = 0;i < BUF_LEN;i++)
+ 518   1              {
+ 519   2                      if(new_temprature[i] == 0)
+ 520   2                              continue;
+ 521   2                      if(new_temprature[i] > g_base)
+ 522   2                              new_h = (new_temprature[i] - g_base)/SCALE_LINE_PRECISION;
+ 523   2                      else
+ 524   2                              new_h = 0;
+ 525   2      
+ 526   2                      if(new_h > 61)
+ 527   2                              new_h = 61;
+ 528   2      
+ 529   2                      if(old_temprature[i] > g_base)
+ 530   2                              old_h = (old_temprature[i] - g_base)/SCALE_LINE_PRECISION;
+ 531   2                      else 
+ 532   2                              old_h = 0;
+ 533   2      
+ 534   2                      if(old_h > 61)
+ 535   2                              old_h = 61;
+ 536   2                      
+ 537   2                      if(new_h == old_h)
+ 538   2                              continue;
+ 539   2                      else if(new_h > old_h)
+ 540   2                      {
+ 541   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
+ 542   3                              y = 61 - old_h;
+ 543   3                              for(k = 0;k < (new_h - old_h);k++)
+ 544   3                               {
+ 545   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 546   4                                       {
+ 547   5                                               DrawDots2(x+j,y-1-k,1);
+ 548   5                                       }
+ 549   4                               }
+ 550   3                              
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 10  
+
+ 551   3                      }
+ 552   2                      else if (new_h < old_h)
+ 553   2                      {
+ 554   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
+ 555   3                              y = 61 - old_h;
+ 556   3                              for(k = 0;k < (old_h - new_h);k++)
+ 557   3                               {
+ 558   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 559   4                                       {
+ 560   5                                               DrawDots2(x+j,y+k,0);
+ 561   5                                       }
+ 562   4                               }
+ 563   3                      }
+ 564   2              }
+ 565   1      
+ 566   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   3215    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----     111
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

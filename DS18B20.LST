@@ -1,0 +1,149 @@
+C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:23:34 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE DS18B20
+OBJECT MODULE PLACED IN DS18B20.OBJ
+COMPILER INVOKED BY: D:\Keil\C51\BIN\C51.EXE DS18B20.c LARGE BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "DS18B20.h"
+   2          
+   3          /**********************************************************
+   4          *DS18B20 初始化 
+   5          *函数名称:DS1820_WriteData() 
+   6          *说明：本初始化程序可以不要，因为18B20 在出厂时就被配置为12 位精度了 
+   7          **********************************************************/
+   8          void DS18B20_Init()
+   9          {
+  10   1              DS1820_Reset();
+  11   1              DS1820_WriteData(0xCC); // 跳过ROM 
+  12   1              DS1820_WriteData(0x4E); // 写暂存器 
+  13   1              DS1820_WriteData(0x20); // 往暂存器的第三字节中写上限值 
+  14   1              DS1820_WriteData(0x00); // 往暂存器的第四字节中写下限值 
+  15   1              DS1820_WriteData(0x7F); // 将配置寄存器配置为12 位精度 
+  16   1              DS1820_Reset();
+  17   1      }
+  18          /**********************************************************
+  19          *DS1820 复位及存在检测(通过存在脉冲可以判断DS1820 是否损坏) 
+  20          *函数名称:DS1820_Reset() 
+  21          *说明:函数返回一个位标量(0 或1)flag=0 存在,反之flag=1 不存在 
+  22          **********************************************************/
+  23          bit DS1820_Reset()
+  24          {
+  25   1              bit flag;
+  26   1              DS1820_DQ = 0; //拉低总线 
+  27   1              DelayXus(480); //延时480 微秒,产生复位脉冲 
+  28   1              DS1820_DQ = 1; //释放总线 
+  29   1              DelayXus(80); //延时80 微秒对总线采样 
+  30   1              flag = DS1820_DQ; //对数据脚采样 
+  31   1              DelayXus(400); //延时400 微秒等待总线恢复 
+  32   1              return (flag); //根据flag 的值可知DS1820 是否存在或损坏 ，可加声音告警提示DS1820 故障 
+  33   1      }
+  34          /**********************************************************
+  35          *写数据到DS1820
+  36          *函数名称:DS1820_WriteData()
+  37          **********************************************************/
+  38          void DS1820_WriteData(BYTE wData)
+  39          {
+  40   1              BYTE i;
+  41   1              for (i=8;i>0;i--)
+  42   1              {
+  43   2                      DS1820_DQ = 0; //拉低总线,产生写信号 
+  44   2                      DelayXus(4); //延时4us 
+  45   2                      DS1820_DQ = wData&0x01; //发送1 位 
+  46   2                      DelayXus(60); //延时60us,写时序至少要60us 
+  47   2                      DS1820_DQ = 1; //释放总线,等待总线恢复 
+  48   2                      wData>>=1; //准备下一位数据的传送 
+  49   2              }
+  50   1      }
+  51          /**********************************************************
+  52          *从DS1820 中读出数据
+  53          *函数名称:DS1820_ReadData()
+  54          **********************************************************/
+  55          BYTE DS1820_ReadData()
+C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:23:34 PAGE 2   
+
+  56          {
+  57   1              BYTE i,TmepData;
+  58   1              for (i=8;i>0;i--)
+  59   1              {
+  60   2                      TmepData>>=1;
+  61   2                      DS1820_DQ = 0; //拉低总线,产生读信号 
+  62   2                      DelayXus(4); //延时4us 
+  63   2                      DS1820_DQ = 1; //释放总线,准备读数据 
+  64   2                      DelayXus(8); //延时8 微秒读数据 
+  65   2                      if (DS1820_DQ == 1)
+  66   2                      {TmepData |= 0x80;}
+  67   2                      DelayXus(60); //延时60us 
+  68   2                      DS1820_DQ = 1; //拉高总线,准备下一位数据的读取. 
+  69   2              }
+  70   1              return (TmepData);//返回读到的数据 
+  71   1      }
+  72          
+  73          
+  74          char temperature[2]; //存放温度数据
+  75          /*********************************************************
+  76          *读取温度程序
+  77          **********************************************************/
+  78          void read_wendu()
+  79          {
+  80   1          BYTE i;
+  81   1              DS1820_Reset(); //复位
+  82   1              DS1820_WriteData(0xcc); //跳过ROM 命令
+  83   1              DS1820_WriteData(0x44); //温度转换命令
+  84   1              DS1820_Reset(); //复位
+  85   1              DS1820_WriteData(0xcc); //跳过ROM 命令
+  86   1              DS1820_WriteData(0xbe); //读DS1820 温度暂存器命令
+  87   1              for (i=0;i<2;i++)
+  88   1              {
+  89   2                      temperature[i]=DS1820_ReadData(); //采集温度
+  90   2              }
+  91   1              DS1820_Reset(); //复位,结束读数据
+  92   1      }
+  93          
+  94          extern float wen_val;
+  95          extern BYTE ah,al;
+  96          void get_wendu(void)
+  97          {
+  98   1         read_wendu();
+  99   1         ah=temperature[1]<<4;
+ 100   1         ah&=0xf0;
+ 101   1         al=temperature[0]>>4;
+ 102   1         al&=0x0f;
+ 103   1         ah=ah|al;
+ 104   1         al=temperature[0]&0x0f;
+ 105   1         if ((ah&0x80)!=0)
+ 106   1         {
+ 107   2                      if (al==0)
+ 108   2                      {
+ 109   3                        ah=~ah;ah=ah+1;
+ 110   3                      }
+ 111   2                      else
+ 112   2                      {       
+ 113   3                        ah=~ah;al=~al;al=al+1;al&=0x0f;
+ 114   3                      }
+ 115   2                      wen_val=ah*(-1.0)+al*(-0.0625);
+ 116   2         }
+ 117   1         else 
+C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:23:34 PAGE 3   
+
+ 118   1         {
+ 119   2              wen_val=ah*1.0+al*0.0625;
+ 120   2         }
+ 121   1      }
+ 122           
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    435    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      2       5
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
