@@ -325,7 +325,7 @@ void main()
 				case 3:
 					if(show_scale_line_flag == 1 || scale_line_status == 2){
 						
-						UpdateScaleLine3();
+						UpdateScaleLine();
 						scale_line_status = 3;
 						UpdateOldTemprature();
 						show_scale_line_flag = 0;

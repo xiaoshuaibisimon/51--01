@@ -417,94 +417,10 @@ void ShowScaleLine(BYTE x,BYTE width,WORD var,WORD base,WORD precision)
    }
 }
 
-void GetOldXY(BYTE *x,BYTE *y,BYTE index,WORD base,WORD precision)
-{
-	if(old_temprature[index] == 0)
-	{
-		*y = 60;
-	}else{
-		*y = 61- ((old_temprature[index] - base)/precision);
-	}
-	*x = SCALE_LINE_START_X + (index * SCALE_LINE_INCSIZE);	
-}
-
-void HandleScaleLine(BYTE x,BYTE y,BYTE action,WORD delta,WORD precision)
-{
-	 BYTE i = 0,j = 0;
-	 BYTE height = delta/precision;
-	 if(action == 0)
-	 {
-	 	return ;		
-	 }
-	 else if(action == 1)
-	 {
-		 for(i = 0;i < height;i++)
-		 {
-			 for(j = 0;j < SCALE_LINE_WIDTH;j++)
-			 {
-				 DrawDots2(x+j,y-i,1);
-			 }
-		 }
-	 }
-	 else if(action == 2)
-	 {
-		 for(i = 0;i < height;i++)
-		 {
-			 for(j = 0;j < SCALE_LINE_WIDTH;j++)
-			 {
-				 DrawDots2(x+j,y+i,0);
-			 }
-		 }
-	 }
-}
 extern WORD g_base;
+
+
 void UpdateScaleLine()
-{
-
-	BYTE i = 0,j = 0;
-	BYTE x = 0,y = 0;
-	BYTE action = 0;
-	WORD delta = 0;
-	for(i = 0;i < BUF_LEN;i++)
-	{
-		if(new_temprature[i] > old_temprature[i])
-		{
-			delta =  new_temprature[i] - old_temprature[i];
-			action = 1;
-		}
-		else if(new_temprature[i] < old_temprature[i])
-		{
-			delta =  old_temprature[i] - new_temprature[i];
-			action = 2;
-		}
-		else
-		{
-			delta = 0; 
-			action = 0;
-			continue;
-		}
-
-		GetOldXY(&x,&y,i,g_base,SCALE_LINE_PRECISION);
-		HandleScaleLine(x,y,action,delta,SCALE_LINE_PRECISION);
-	}
-
-}
-
-
-void UpdateScaleLine2()
-{
-	BYTE i = 0;
-
-	clear_lcd();
-	ShowXY();
-	for(i = 0;i < BUF_LEN;i++)
-	{	 
-		 ShowScaleLine(SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE),SCALE_LINE_WIDTH,new_temprature[i],g_base,SCALE_LINE_PRECISION);
-	}
-
-}
-
-void UpdateScaleLine3()
 {
 
 	BYTE i = 0,j = 0,k=0;

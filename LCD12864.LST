@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 1   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE LCD12864
@@ -62,7 +62,7 @@ line level    source
   53   1          BYTE address;
   54   1          if(line == 1)
   55   1          {
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 2   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 2   
 
   56   2              address = 0x80 + column;
   57   2          }
@@ -126,7 +126,7 @@ line level    source
  115          {
  116   1              BYTE dhi,dli,ddi,dei;
  117   1              unsigned long datah;
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 3   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 3   
 
  118   1              unsigned long datal;
  119   1              datah=dat;
@@ -190,7 +190,7 @@ line level    source
  177   2                        dat=1;
  178   2                for (dli=0;dli<N;dli++)
  179   2                        {
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 4   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 4   
 
  180   3                              dat*=10;
  181   3                        }
@@ -254,7 +254,7 @@ line level    source
  239   2              {                         //因为当写入两个字节之后横坐标会自动加1，所以就不用再次写入地址了。
  240   3                  write_data(0x00);    
  241   3              }
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 5   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 5   
 
  242   2          }
  243   1          write_cmd(0x36);
@@ -318,7 +318,7 @@ line level    source
  301   1              if(y>31) //计算X轴的地址当Y大于31时X的地址在下半屏，从0X88开始，小于31时X的地址是在上半屏，从0X80开始
  302   1              x_adr=0x88+x/16;        
  303   1          else
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 6   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 6   
 
  304   1              x_adr=0x80+x/16;
  305   1      
@@ -382,7 +382,7 @@ line level    source
  363   2               write_data(Read_H);
  364   2               write_data(Read_L); 
  365   2           } 
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 7   
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 7   
 
  366   1           else 
  367   1           {
@@ -438,167 +438,80 @@ line level    source
  417   2         }
  418   1      }
  419          
- 420          void GetOldXY(BYTE *x,BYTE *y,BYTE index,WORD base,WORD precision)
- 421          {
- 422   1              if(old_temprature[index] == 0)
- 423   1              {
- 424   2                      *y = 60;
- 425   2              }else{
- 426   2                      *y = 61- ((old_temprature[index] - base)/precision);
- 427   2              }
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 8   
+ 420          extern WORD g_base;
+ 421          
+ 422          
+ 423          void UpdateScaleLine()
+ 424          {
+ 425   1      
+ 426   1              BYTE i = 0,j = 0,k=0;
+ 427   1              BYTE x = 0,y = 0;
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 8   
 
- 428   1              *x = SCALE_LINE_START_X + (index * SCALE_LINE_INCSIZE); 
- 429   1      }
- 430          
- 431          void HandleScaleLine(BYTE x,BYTE y,BYTE action,WORD delta,WORD precision)
- 432          {
- 433   1               BYTE i = 0,j = 0;
- 434   1               BYTE height = delta/precision;
- 435   1               if(action == 0)
- 436   1               {
- 437   2                      return ;                
- 438   2               }
- 439   1               else if(action == 1)
- 440   1               {
- 441   2                       for(i = 0;i < height;i++)
- 442   2                       {
- 443   3                               for(j = 0;j < SCALE_LINE_WIDTH;j++)
- 444   3                               {
- 445   4                                       DrawDots2(x+j,y-i,1);
- 446   4                               }
- 447   3                       }
- 448   2               }
- 449   1               else if(action == 2)
- 450   1               {
- 451   2                       for(i = 0;i < height;i++)
- 452   2                       {
- 453   3                               for(j = 0;j < SCALE_LINE_WIDTH;j++)
- 454   3                               {
- 455   4                                       DrawDots2(x+j,y+i,0);
- 456   4                               }
- 457   3                       }
- 458   2               }
- 459   1      }
- 460          extern WORD g_base;
- 461          void UpdateScaleLine()
- 462          {
- 463   1      
- 464   1              BYTE i = 0,j = 0;
- 465   1              BYTE x = 0,y = 0;
- 466   1              BYTE action = 0;
- 467   1              WORD delta = 0;
- 468   1              for(i = 0;i < BUF_LEN;i++)
- 469   1              {
- 470   2                      if(new_temprature[i] > old_temprature[i])
- 471   2                      {
- 472   3                              delta =  new_temprature[i] - old_temprature[i];
- 473   3                              action = 1;
- 474   3                      }
- 475   2                      else if(new_temprature[i] < old_temprature[i])
- 476   2                      {
- 477   3                              delta =  old_temprature[i] - new_temprature[i];
- 478   3                              action = 2;
+ 428   1              BYTE action = 0;
+ 429   1              WORD delta = 0;
+ 430   1              BYTE new_h = 0;
+ 431   1              BYTE old_h = 0;
+ 432   1      
+ 433   1              for(i = 0;i < BUF_LEN;i++)
+ 434   1              {
+ 435   2                      if(new_temprature[i] == 0)
+ 436   2                              continue;
+ 437   2                      if(new_temprature[i] > g_base)
+ 438   2                              new_h = (new_temprature[i] - g_base)/SCALE_LINE_PRECISION;
+ 439   2                      else
+ 440   2                              new_h = 0;
+ 441   2      
+ 442   2                      if(new_h > 61)
+ 443   2                              new_h = 61;
+ 444   2      
+ 445   2                      if(old_temprature[i] > g_base)
+ 446   2                              old_h = (old_temprature[i] - g_base)/SCALE_LINE_PRECISION;
+ 447   2                      else 
+ 448   2                              old_h = 0;
+ 449   2      
+ 450   2                      if(old_h > 61)
+ 451   2                              old_h = 61;
+ 452   2                      
+ 453   2                      if(new_h == old_h)
+ 454   2                              continue;
+ 455   2                      else if(new_h > old_h)
+ 456   2                      {
+ 457   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
+ 458   3                              y = 61 - old_h;
+ 459   3                              for(k = 0;k < (new_h - old_h);k++)
+ 460   3                               {
+ 461   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 462   4                                       {
+ 463   5                                               DrawDots2(x+j,y-1-k,1);
+ 464   5                                       }
+ 465   4                               }
+ 466   3                              
+ 467   3                      }
+ 468   2                      else if (new_h < old_h)
+ 469   2                      {
+ 470   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
+ 471   3                              y = 61 - old_h;
+ 472   3                              for(k = 0;k < (old_h - new_h);k++)
+ 473   3                               {
+ 474   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
+ 475   4                                       {
+ 476   5                                               DrawDots2(x+j,y+k,0);
+ 477   5                                       }
+ 478   4                               }
  479   3                      }
- 480   2                      else
- 481   2                      {
- 482   3                              delta = 0; 
- 483   3                              action = 0;
- 484   3                              continue;
- 485   3                      }
- 486   2      
- 487   2                      GetOldXY(&x,&y,i,g_base,SCALE_LINE_PRECISION);
- 488   2                      HandleScaleLine(x,y,action,delta,SCALE_LINE_PRECISION);
- 489   2              }
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 9   
-
- 490   1      
- 491   1      }
- 492          
- 493          
- 494          void UpdateScaleLine2()
- 495          {
- 496   1              BYTE i = 0;
- 497   1      
- 498   1              clear_lcd();
- 499   1              ShowXY();
- 500   1              for(i = 0;i < BUF_LEN;i++)
- 501   1              {        
- 502   2                       ShowScaleLine(SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE),SCALE_LINE_WIDTH,new_temprature[i],g_base,S
-             -CALE_LINE_PRECISION);
- 503   2              }
- 504   1      
- 505   1      }
- 506          
- 507          void UpdateScaleLine3()
- 508          {
- 509   1      
- 510   1              BYTE i = 0,j = 0,k=0;
- 511   1              BYTE x = 0,y = 0;
- 512   1              BYTE action = 0;
- 513   1              WORD delta = 0;
- 514   1              BYTE new_h = 0;
- 515   1              BYTE old_h = 0;
- 516   1      
- 517   1              for(i = 0;i < BUF_LEN;i++)
- 518   1              {
- 519   2                      if(new_temprature[i] == 0)
- 520   2                              continue;
- 521   2                      if(new_temprature[i] > g_base)
- 522   2                              new_h = (new_temprature[i] - g_base)/SCALE_LINE_PRECISION;
- 523   2                      else
- 524   2                              new_h = 0;
- 525   2      
- 526   2                      if(new_h > 61)
- 527   2                              new_h = 61;
- 528   2      
- 529   2                      if(old_temprature[i] > g_base)
- 530   2                              old_h = (old_temprature[i] - g_base)/SCALE_LINE_PRECISION;
- 531   2                      else 
- 532   2                              old_h = 0;
- 533   2      
- 534   2                      if(old_h > 61)
- 535   2                              old_h = 61;
- 536   2                      
- 537   2                      if(new_h == old_h)
- 538   2                              continue;
- 539   2                      else if(new_h > old_h)
- 540   2                      {
- 541   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
- 542   3                              y = 61 - old_h;
- 543   3                              for(k = 0;k < (new_h - old_h);k++)
- 544   3                               {
- 545   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
- 546   4                                       {
- 547   5                                               DrawDots2(x+j,y-1-k,1);
- 548   5                                       }
- 549   4                               }
- 550   3                              
-C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:23:34 PAGE 10  
-
- 551   3                      }
- 552   2                      else if (new_h < old_h)
- 553   2                      {
- 554   3                              x = SCALE_LINE_START_X + (i * SCALE_LINE_INCSIZE);
- 555   3                              y = 61 - old_h;
- 556   3                              for(k = 0;k < (old_h - new_h);k++)
- 557   3                               {
- 558   4                                       for(j = 0;j < SCALE_LINE_WIDTH;j++)
- 559   4                                       {
- 560   5                                               DrawDots2(x+j,y+k,0);
- 561   5                                       }
- 562   4                               }
- 563   3                      }
- 564   2              }
- 565   1      
- 566   1      }
+ 480   2              }
+ 481   1      
+ 482   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =   3215    ----
+   CODE SIZE        =   2508    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----     111
+   XDATA SIZE       =   ----      82
    PDATA SIZE       =   ----    ----
+C51 COMPILER V9.00   LCD12864                                                              04/08/2017 19:40:17 PAGE 9   
+
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----

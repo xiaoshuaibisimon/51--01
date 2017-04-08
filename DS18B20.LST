@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:23:34 PAGE 1   
+C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:40:16 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE DS18B20
@@ -62,7 +62,7 @@ line level    source
   53          *º¯ÊýÃû³Æ:DS1820_ReadData()
   54          **********************************************************/
   55          BYTE DS1820_ReadData()
-C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:23:34 PAGE 2   
+C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:40:16 PAGE 2   
 
   56          {
   57   1              BYTE i,TmepData;
@@ -126,7 +126,7 @@ line level    source
  115   2                      wen_val=ah*(-1.0)+al*(-0.0625);
  116   2         }
  117   1         else 
-C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:23:34 PAGE 3   
+C51 COMPILER V9.00   DS18B20                                                               04/08/2017 19:40:16 PAGE 3   
 
  118   1         {
  119   2              wen_val=ah*1.0+al*0.0625;

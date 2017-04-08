@@ -45,9 +45,8 @@ BYTE read_data(void);
 void DrawDots(BYTE x,BYTE y);//打点函数   //x，y为128*64 点阵的坐标
 void DrawDots2(BYTE x,BYTE y,BYTE color);
 void ShowXY(void);
-void ShowScaleLine(BYTE x,BYTE width,WORD var,WORD base,WORD precision);
+
 void UpdateScaleLine();
-void UpdateScaleLine3();
 
 #ifdef MY_LCD
 void write_data_lcd(BYTE line,column,dat);

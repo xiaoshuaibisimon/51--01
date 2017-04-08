@@ -1,4 +1,4 @@
-C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:23:34 PAGE 1   
+C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:40:17 PAGE 1   
 
 
 C51 COMPILER V9.00, COMPILATION OF MODULE STC12C
@@ -62,7 +62,7 @@ line level    source
   53          sfr TL2        = 0xCC;
   54          sfr TH2        = 0xCD;
   55          
-C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:23:34 PAGE 2   
+C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:40:17 PAGE 2   
 
   56          sfr PSW        = 0xD0;
   57          sfr CCON       = 0xD8;
@@ -126,7 +126,7 @@ line level    source
  115          sbit EA    = 0xAF;
  116          sbit ES    = 0xAC;
  117          sbit ET1   = 0xAB;
-C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:23:34 PAGE 3   
+C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:40:17 PAGE 3   
 
  118          sbit EX1   = 0xAA;
  119          sbit ET0   = 0xA9;
@@ -190,7 +190,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
-C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:23:34 PAGE 4   
+C51 COMPILER V9.00   STC12C                                                                04/08/2017 19:40:17 PAGE 4   
 
 END OF MODULE INFORMATION.
 
